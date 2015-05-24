@@ -1,0 +1,63 @@
+---
+title: "README"
+author: "dlhicks"
+date: "Friday, May 22, 2015"
+output: html_document
+---
+###Overview, Data Source and purpose
+Using a Samsung smartphone 30 subjects were asked to perform specific actvities (6 of them) while the embedded accelerometer and gyroscope of the phone recorded movements, resulting in 561 discrete variables for all 30 subjects and 6 activities.
+These (30) subjects were divided into two groups:  Train(30% of subjects) and Test(70%) data for each being recorded into train and test datasets and accompanying metadata as seperate files detailed below.
+This cookbook and accompanying R script (Run_analysis.R) describe and define the merging of both test and train datasets into a single dataset combined with the appropriate metadata (subjects, activities), into a compact, tidy and useful form for additional study and detail the discrete steps taken in this transformation as coded into the R script provided.
+
+
+Requirements and Goals of "Run_analysis.R"     
+ - Combine test and train into a single data set (Means), with the following criteria  
+ - Means dataset is to consist of only the mean and std for each data set, drop all other columns/variables.    
+ - Numeric activity codes in the resulting Means dataset are to be assigned descriptive names.      
+ - Modify Variable Names where appropriate in the Means dataset.  
+ - Take the average of each activity per subject in the Means dataset and create a final Tidy Dataset (Tidy_Data_Number_5).   
+
+
+###Input Data:  
+Two sets of Raw data:  
+ **Test**  30% of subjects performing each of 6 activities      
+ **Train**  70% of subjects performing each of 6 activities  
+ 
+Each of which is composed of 3 Documents:  
+       
+ - **X_Train.txt/X_Test.txt**:      Raw data, 561 columns of measurements for both test and train.     
+ - **y_train.txt/y_test.txt**:      Activity a subject performed to generate the raw data (1-6).    
+                                    1=Walking 2=Walking Upstairs  3=Walking Downstairs   4=Sitting  5=Standing  6=Laying.       
+ - **subject_train.txt/subject_test.txt**:     List of subjects (1-30) for a given dataset.  
+ - **features.txt**:    Variable/Column names for both Test and Train data  
+ 
+##Variable/Column names and modification in the data
+Variables/Column names in the features file are already very structured and descriptive and were only modified to the extent that special characters (parenthesis, hyphens) were replaced with "_" to simplify any future manipulation, searching etc.  Simplifying variable names to something more human readable is often a good practice and does tend to make data more easily understoond.  However in this case the dataset and column names have very specific coded meanings, and trying to "simplify" them would actually detract from their utility.  Besides this is clearly a technical dataset meant to be used by a very limited group of technical people.
+
+##Variable names and meanings in the data:  
+The features selected for this database come from the accelerometer and gyroscope 3-axial raw signals tAcc-XYZ and tGyro-XYZ. These time domain signals (**prefix 't' to denote time**) were captured at a constant rate of 50 Hz. Then they were filtered using a median filter and a 3rd order low pass Butterworth filter with a corner frequency of 20 Hz to remove noise. Similarly, the acceleration signal was then separated into body and gravity acceleration signals (tBodyAcc-XYZ and tGravityAcc-XYZ) using another low pass Butterworth filter with a corner frequency of 0.3 Hz. 
+
+Subsequently, the body linear acceleration and angular velocity were derived in time to obtain Jerk signals (tBodyAccJerk-XYZ and tBodyGyroJerk-XYZ). Also the magnitude of these three-dimensional signals were calculated using the Euclidean norm (tBodyAccMag, tGravityAccMag, tBodyAccJerkMag, tBodyGyroMag, tBodyGyroJerkMag). 
+
+Finally a Fast Fourier Transform (FFT) was applied to some of these signals producing fBodyAcc-XYZ, fBodyAccJerk-XYZ, fBodyGyro-XYZ, fBodyAccJerkMag, fBodyGyroMag, fBodyGyroJerkMag. (**Note the 'f' to indicate frequency domain signals**). 
+
+These signals were used to estimate variables of the feature vector for each pattern:  
+'-XYZ' is used to denote 3-axial signals in the X, Y and Z directions.  
+
+###Script functioning, transformations and script variable names 
+
+Note that the source code of **Run_analysis.R** is annotated such that each transformations below iare defined in the code by the corresponding number i.e. (1)  
+ 1.  Source appropriate Libraries  
+ 2.  Input all 7 raw and meta-data files described above to dataframes and vectors with names to refelect groupings.  Data_train for training data, Activity_train for activity metadata, Subject_train for Subject metadata and Feature which is common to both training and test datasets. **All inpput files must exist in the same directory as this R script**     
+ 3.  Define, based on the features meta-data which of the 561 variables were actually means and std.  This was done by grepping variable names for those strings and trapping those column numbers in a vector called col_nums.  These will be the columns/variables present in the final Means dataset.  
+ 4.  Extract those column names (based on col_nums) and proceed to remove any special characters( parenthesis, hyphens etc) to make them more readable and less prone to issues when searching.  See Variables section for more info on variable name meanings.  
+ 5.  Add two additional column names to the character vector (colnames) to provide a placeholder for Subject, and Activity Name, i.e. the metadata which needs to merged with raw data in a later step.  Colnames should now represent all variables/column names in the soon to be created Means dataframe.  
+ 6.  Extract the appropriate variables from the test and train raw data based on col_nums, creating two temp dataframes data_test_std_means and data_train_std_means.    
+ 7.  Merge the test and train temp dataframes into a single dataframe called data.  Essentially we concatenating Train onto the end of Test.  
+ 8.  Merge Subject and activity dataframes in the same manner, Train on to the end of Test... maintaining that order of concatenation such that merging Data,Activity and Subject into one is a simple process.   
+ 9.  Replace numeric Activity Codes for sensible ascii txt.  
+ 10. Combine Activity,Subject and Data into the Data dataframe. 
+ 11.  Using colnames and the data dataframe, label all columns in the data dataframe.  
+ 12.  Create the Data.dt data table to allow the data to be easily qc'd, summarised and queried  This is the ideal final state and satisfies the first four requirements as set aside in Overall Process above.  
+ 13.  In order to compute the means of each activity by subject a final step was run to first order the data by activity and subject and then compute the Mean of each of the resulting 89 columns, storing this all in a **180row x 89 col datatable called Means**.  
+ 14. Wriite the final resulting datatable called means to a space delimited txt file called **Tidy_data_number_5.txt**.  

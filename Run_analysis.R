@@ -1,3 +1,4 @@
+#This script assumes that the input files(see input test and train files) exist in the same directory as the R script
 #See codebook for additional details.  Numbers in (1) in comments refer to specific transformations described in codebook
 
 #Source Needed libraries(1)
